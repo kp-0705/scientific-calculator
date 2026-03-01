@@ -35,7 +35,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${IMAGE} .'
+                sh "docker build -t ${IMAGE} ."
             }
         }
 
@@ -47,38 +47,39 @@ pipeline {
                     passwordVariable: 'PASS')]) {
 
                     sh '''
-                    echo "$PASS" | docker login -u "$USER" --password-stdin
-                    docker push ${IMAGE}
-                    docker logout
+                        echo "$PASS" | docker login -u "$USER" --password-stdin
+                        docker push ${IMAGE}
+                        docker logout
                     '''
                 }
             }
         }
-        
-        stage('Deploy with Ansible') 
-        {
+
+        stage('Deploy with Ansible') {
             steps {
-              sh 'ansible-playbook -i ansible/inventory.ini ansible/deploy.yml'
-                  } 
+                sh 'ansible-playbook -i ansible/inventory.ini ansible/deploy.yml'
+            }
         }
-        
     }
 
     post {
-    success {
-        emailext (
-            subject: "Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: "Good news! The build was successful.\n\nCheck Jenkins for details.",
-            to: "kpbhai0705@gmail.com"
-            attachLog: true
-                )
-             }
-    failure {
-        emailext (
-            subject: "Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-            body: "Build failed. Please check Jenkins immediately.",
-            to: "kpbhai0705@gmail.com"
-        )
-           }
-                }
+
+        success {
+            emailext(
+                subject: "Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Build completed successfully.\n\nJob: ${env.JOB_NAME}\nBuild: ${env.BUILD_NUMBER}\nURL: ${env.BUILD_URL}",
+                to: "kpbhai0705@gmail.com",
+                from: "kpbhai0705@gmail.com"
+            )
+        }
+
+        failure {
+            emailext(
+                subject: "Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: "Build failed.\nCheck details at: ${env.BUILD_URL}",
+                to: "kpbhai0705@gmail.com",
+                from: "kpbhai0705@gmail.com"
+            )
+        }
+    }
 }
