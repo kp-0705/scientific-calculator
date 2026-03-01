@@ -61,5 +61,21 @@ pipeline {
               sh 'ansible-playbook -i ansible/inventory.ini ansible/deploy.yml'
                   } 
         }
+        post {
+    success {
+        emailext (
+            subject: "Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: "Good news! The build was successful.\n\nCheck Jenkins for details.",
+            to: "yourgmail@gmail.com"
+                )
+             }
+    failure {
+        emailext (
+            subject: "Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+            body: "Build failed. Please check Jenkins immediately.",
+            to: "yourgmail@gmail.com"
+        )
+           }
+                }
     }
 }
