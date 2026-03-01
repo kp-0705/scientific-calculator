@@ -70,6 +70,7 @@ pipeline {
             subject: "Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
             body: "Good news! The build was successful.\n\nCheck Jenkins for details.",
             to: "kpbhai0705@gmail.com"
+            attachLog: true
                 )
              }
     failure {
