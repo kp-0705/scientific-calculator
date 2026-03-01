@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven'
+    }
+
+    environment {
+        DOCKER_USER = 'kp0705'
+        IMAGE_NAME = 'scientific-calculator'
+        TAG = 'latest'
+        IMAGE = "${DOCKER_USER}/${IMAGE_NAME}:${TAG}"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/kp-0705/scientific-calculator.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${IMAGE} .'
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-creds',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS')]) {
+
+                    sh '''
+                    echo "$PASS" | docker login -u "$USER" --password-stdin
+                    docker push ${IMAGE}
+                    docker logout
+                    '''
+                }
+            }
+        }
+    }
+}
